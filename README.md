@@ -1,13 +1,6 @@
 # Hadiid Vehicle Fabrication ERP
 
-A production-oriented replacement for the `vehicle_fabrication_tracker` Excel
-workbook, built strictly to the architecture in `hadiid_erp_architecture_spec.md`
-(from the design phase of this project): Spring Boot + Spring Security +
-JdbcTemplate/RowMapper (no JPA/Hibernate/ORM anywhere), Flyway-versioned MySQL
-schema, Thymeleaf + Tailwind server-rendered UI, three roles
-(NORMAL_USER / SUPERVISOR / ADMIN) with a 24-permission matrix, an append-only
-stage-history table separate from the mutable job record, and computed (never
-stored) percentages/durations.
+
 
 ## ⚠️ Build status — please read before assuming this "just works"
 
