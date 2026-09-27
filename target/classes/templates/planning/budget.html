@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head(title='Weekly budgets')}"></head>
+<body class="bg-slate-50 min-h-screen">
+<div th:replace="~{fragments/layout :: sidebar}"></div>
+<div class="lg:pl-64">
+<div th:replace="~{fragments/layout :: topbar(title='Weekly Budgets')}"></div>
+<div th:replace="~{fragments/layout :: alerts}"></div>
+<main class="max-w-5xl mx-auto p-6 space-y-6">
+    <div class="flex items-center justify-between">
+        <h1 class="text-2xl font-bold text-slate-900" th:text="'Weekly Budget — week of ' + ${weekStart}"></h1>
+        <a href="/planning" class="text-sm underline text-slate-600">← Monthly plan</a>
+    </div>
+
+    <div class="card overflow-hidden">
+        <table class="min-w-full text-sm">
+            <thead class="bg-slate-50">
+            <tr>
+                <th class="th-cell">Section</th>
+                <th class="th-cell text-right">Materials Budget</th>
+                <th class="th-cell text-right">Materials Actual</th>
+                <th class="th-cell text-right">Labor Budget</th>
+                <th class="th-cell text-right">Labor Actual (computed)</th>
+                <th class="th-cell" sec:authorize="hasAuthority('PLAN_EDIT')">Update</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="b : ${budgets}" class="border-t">
+                <td class="td-cell font-medium" th:text="${b.sectionLabel}"></td>
+                <td class="td-cell text-right" th:text="${b.materialsBudget}"></td>
+                <td class="td-cell text-right" th:text="${b.materialsActual}"></td>
+                <td class="td-cell text-right" th:text="${b.laborBudget}"></td>
+                <td class="td-cell text-right" th:text="${b.laborActual}"></td>
+                <td class="td-cell" sec:authorize="hasAuthority('PLAN_EDIT')">
+                    <form method="post" th:action="@{/planning/budget}" class="flex gap-1">
+                        <input type="hidden" name="sectionId" th:value="${b.sectionId}"/>
+                        <input type="hidden" name="weekStart" th:value="${weekStart}"/>
+                        <input type="number" step="0.01" name="materialsBudget" th:value="${b.materialsBudget}" class="input !py-1 !w-24"/>
+                        <input type="number" step="0.01" name="materialsActual" th:value="${b.materialsActual}" class="input !py-1 !w-24"/>
+                        <input type="number" step="0.01" name="laborBudget" th:value="${b.laborBudget}" class="input !py-1 !w-24"/>
+                        <button type="submit" class="btn-primary !px-2 !py-1 !text-xs">Save</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <p class="text-xs text-slate-400">Materials figures are manual entry today (§H.6). Labor Actual is always computed from labor_payments.</p>
+</main>
+</div>
+</body>
+</html>

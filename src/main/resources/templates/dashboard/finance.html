@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(title='Finance dashboard')}"></head>
+<body class="bg-slate-50 min-h-screen">
+<div th:replace="~{fragments/layout :: sidebar}"></div>
+<div class="lg:pl-64">
+<div th:replace="~{fragments/layout :: topbar(title='Finance Dashboard')}"></div>
+<div th:replace="~{fragments/layout :: alerts}"></div>
+<main class="max-w-7xl mx-auto p-6 space-y-6">
+    <p class="text-sm text-slate-500">
+        Balance and % Paid are always against each job's Contract Amount — never against worker wages agreed (§B.5/§C).
+    </p>
+
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4" th:if="${!#lists.isEmpty(financeSummaries)}">
+        <div class="card p-5">
+            <span class="text-xs font-semibold uppercase tracking-wide text-slate-500">Total Contract Value</span>
+            <div class="text-2xl font-bold text-slate-900 mt-2" th:text="${#numbers.formatDecimal(grandContract,1,'COMMA',0,'POINT')}"></div>
+        </div>
+        <div class="card p-5">
+            <span class="text-xs font-semibold uppercase tracking-wide text-slate-500">Total Paid</span>
+            <div class="text-2xl font-bold text-emerald-600 mt-2" th:text="${#numbers.formatDecimal(grandPaid,1,'COMMA',0,'POINT')}"></div>
+        </div>
+        <div class="card p-5">
+            <span class="text-xs font-semibold uppercase tracking-wide text-slate-500">Outstanding Balance</span>
+            <div class="text-2xl font-bold text-red-600 mt-2" th:text="${#numbers.formatDecimal(grandBalance,1,'COMMA',0,'POINT')}"></div>
+        </div>
+    </div>
+
+    <div class="card p-5">
+        <h3 class="font-semibold text-slate-800 mb-4">Contract Value vs. Paid, by Section</h3>
+        <canvas id="financeChart" height="220"></canvas>
+    </div>
+
+    <div class="card overflow-hidden">
+        <table class="min-w-full text-sm">
+            <thead class="bg-slate-50">
+            <tr>
+                <th class="th-cell">Section</th>
+                <th class="th-cell text-right">Jobs</th>
+                <th class="th-cell text-right">Contract Amount</th>
+                <th class="th-cell text-right">Total Paid</th>
+                <th class="th-cell text-right">Balance</th>
+            </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+            <tr th:each="row : ${financeSummaries}">
+                <td class="td-cell font-medium" th:text="${row.sectionLabel}"></td>
+                <td class="td-cell text-right" th:text="${row.jobCount}"></td>
+                <td class="td-cell text-right" th:text="${#numbers.formatDecimal(row.totalContractAmount,1,'COMMA',0,'POINT')}"></td>
+                <td class="td-cell text-right text-emerald-700" th:text="${#numbers.formatDecimal(row.totalPaid,1,'COMMA',0,'POINT')}"></td>
+                <td class="td-cell text-right font-semibold text-red-700" th:text="${#numbers.formatDecimal(row.totalBalance,1,'COMMA',0,'POINT')}"></td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(financeSummaries)}">
+                <td colspan="5" class="td-cell text-center text-slate-400 py-8">No jobs yet.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    const financeSummaries = /*[[${financeSummaries}]]*/ [];
+    /*]]>*/
+    new Chart(document.getElementById('financeChart'), {
+        type: 'bar',
+        data: {
+            labels: financeSummaries.map(r => r.sectionLabel),
+            datasets: [
+                { label: 'Contract Amount', data: financeSummaries.map(r => r.totalContractAmount), backgroundColor: '#bfdbfe', borderRadius: 4 },
+                { label: 'Paid', data: financeSummaries.map(r => r.totalPaid), backgroundColor: '#2563eb', borderRadius: 4 }
+            ]
+        },
+        options: { responsive: true, plugins: { legend: { position: 'bottom' } }, scales: { y: { beginAtZero: true } } }
+    });
+</script>
+</body>
+</html>

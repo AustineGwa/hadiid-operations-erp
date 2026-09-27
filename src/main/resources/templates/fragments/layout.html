@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <!-- th:fragment="head(title)" : common <head> for every page. Blue/white theme via Tailwind Play CDN config. -->
+    <th:block th:fragment="head(title)">
+        <meta charset="UTF-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <title th:text="${title} + ' · Hadiid ERP'">Hadiid ERP</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com"/>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script>
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        fontFamily: { sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'] },
+                        colors: {
+                            brand: {
+                                50:  '#eff6ff', 100: '#dbeafe', 200: '#bfdbfe', 300: '#93c5fd',
+                                400: '#60a5fa', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8',
+                                800: '#1e40af', 900: '#1e3a8a', 950: '#172554'
+                            }
+                        },
+                        boxShadow: { card: '0 1px 2px 0 rgb(0 0 0 / 0.04), 0 1px 3px 0 rgb(0 0 0 / 0.06)' }
+                    }
+                }
+            };
+        </script>
+        <style>
+            [x-cloak] { display: none !important; }
+            body { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; }
+            ::-webkit-scrollbar { width: 8px; height: 8px; }
+            ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+        </style>
+        <!-- Play CDN only compiles @apply inside a type="text/tailwindcss" block, not a plain <style> tag. -->
+        <style type="text/tailwindcss">
+            @layer utilities {
+                .card { @apply bg-white rounded-xl shadow-card border border-slate-200/70; }
+                .badge { @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium; }
+                .btn-primary { @apply inline-flex items-center gap-1.5 bg-brand-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-brand-700 transition shadow-sm; }
+                .btn-secondary { @apply inline-flex items-center gap-1.5 bg-white border border-slate-300 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-50 transition; }
+                .input { @apply w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500; }
+                .th-cell { @apply px-4 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500; }
+                .td-cell { @apply px-4 py-3 text-sm text-slate-700; }
+            }
+        </style>
+    </th:block>
+</head>
+<body>
+
+<!-- th:fragment="sidebar" : fixed left sidebar, permission-gated, CSS-only mobile toggle (no JS dependency). -->
+<th:block th:fragment="sidebar" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<input type="checkbox" id="sidebar-toggle" class="hidden peer"/>
+<label for="sidebar-toggle" class="fixed inset-0 bg-slate-900/40 z-30 hidden peer-checked:block lg:hidden"></label>
+<aside class="fixed inset-y-0 left-0 z-40 w-64 bg-brand-950 text-brand-100 flex flex-col
+              -translate-x-full peer-checked:translate-x-0 lg:translate-x-0 transition-transform duration-200">
+    <div class="h-16 flex items-center gap-2 px-5 border-b border-white/10 shrink-0">
+        <div class="w-8 h-8 rounded-lg bg-brand-600 flex items-center justify-center font-bold text-white">H</div>
+        <div>
+            <div class="text-white font-bold leading-tight text-sm">Hadiid ERP</div>
+            <div class="text-brand-300 text-[11px] leading-tight">Fabrication Tracker</div>
+        </div>
+    </div>
+
+    <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-6 text-sm">
+        <div sec:authorize="hasAuthority('REPORT_VIEW')">
+            <a href="/dashboard" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/10 text-brand-100 hover:text-white transition">
+                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                Dashboard
+            </a>
+        </div>
+
+        <div>
+            <div class="px-3 text-[11px] font-semibold uppercase tracking-wider text-brand-400 mb-1">Operations</div>
+            <div class="space-y-0.5">
+                <a sec:authorize="hasAuthority('JOB_VIEW')" href="/jobs" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/10 text-brand-100 hover:text-white transition">
+                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7h-3V5a2 2 0 00-2-2H9a2 2 0 00-2 2v2H4a1 1 0 00-1 1v10a2 2 0 002 2h14a2 2 0 002-2V8a1 1 0 00-1-1zM9 5h6v2H9V5z"/></svg>
+                    Fabrication Jobs
+                </a>
+                <a sec:authorize="hasAuthority('JOB_VIEW')" href="/customers" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/10 text-brand-100 hover:text-white transition">
+                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m5-3a4 4 0 100-8 4 4 0 000 8zm8 3a4 4 0 00-3-3.87M7 9a4 4 0 100-8 4 4 0 000 8z"/></svg>
+                    Customers
+                </a>
+                <a sec:authorize="hasAuthority('PAYMENT_VIEW')" href="/labor/workers" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/10 text-brand-100 hover:text-white transition">
+                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                    Labor &amp; Payments
+                </a>
+                <a sec:authorize="hasAuthority('SCHEDULE_VIEW')" href="/schedule" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/10 text-brand-100 hover:text-white transition">
+                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    Schedule
+                </a>
+                <a sec:authorize="hasAuthority('PLAN_VIEW')" href="/planning" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/10 text-brand-100 hover:text-white transition">
+                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14"/></svg>
+                    Planning
+                </a>
+            </div>
+        </div>
+
+        <div sec:authorize="hasAuthority('REPORT_VIEW')">
+            <div class="px-3 text-[11px] font-semibold uppercase tracking-wider text-brand-400 mb-1">Reports</div>
+            <div class="space-y-0.5">
+                <a href="/reports/finance" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/10 text-brand-100 hover:text-white transition">
+                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .672-3 1.5S10.343 11 12 11s3 .672 3 1.5-1.343 1.5-3 1.5m0-6c1.11 0 2.08.402 2.599 1M12 8V6.5m0 1.5v6m0 0V17m0-1.5c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    Finance
+                </a>
+                <a href="/reports/stage-movement" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/10 text-brand-100 hover:text-white transition">
+                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H4a1 1 0 00-1 1v7h6zm0 0h6m-6 0V9a2 2 0 012-2h2a2 2 0 012 2v10m0 0h5a1 1 0 001-1v-4a2 2 0 00-2-2h-2a2 2 0 00-2 2v5z"/></svg>
+                    Stage Movement
+                </a>
+            </div>
+        </div>
+
+        <div sec:authorize="hasAnyAuthority('SETTINGS_VIEW','USER_VIEW','AUDIT_VIEW')">
+            <div class="px-3 text-[11px] font-semibold uppercase tracking-wider text-brand-400 mb-1">Administration</div>
+            <div class="space-y-0.5">
+                <a sec:authorize="hasAuthority('SETTINGS_VIEW')" href="/settings/reference" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/10 text-brand-100 hover:text-white transition">
+                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    Reference Data
+                </a>
+                <a sec:authorize="hasAuthority('USER_VIEW')" href="/settings/users" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/10 text-brand-100 hover:text-white transition">
+                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                    Users
+                </a>
+                <a sec:authorize="hasAuthority('AUDIT_VIEW')" href="/settings/audit" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/10 text-brand-100 hover:text-white transition">
+                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    Audit Trail
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="px-3 py-4 border-t border-white/10 text-[11px] text-brand-400">
+        Hadiid ERP · v1.0
+    </div>
+</aside>
+</th:block>
+
+<!-- th:fragment="topbar(title)" : sticky top bar inside the content column (mobile menu button + title + user chip). -->
+<div th:fragment="topbar(title)" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+     class="sticky top-0 z-20 h-16 bg-white/90 backdrop-blur border-b border-slate-200 flex items-center gap-3 px-4 lg:px-6">
+    <label for="sidebar-toggle" class="lg:hidden p-2 -ml-2 rounded-lg hover:bg-slate-100 cursor-pointer">
+        <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </label>
+    <h1 class="text-lg font-semibold text-slate-900" th:text="${title}">Page</h1>
+    <div class="ml-auto flex items-center gap-3">
+        <span sec:authorize="isAuthenticated()" class="hidden sm:flex items-center gap-2 text-sm text-slate-600">
+            <span class="w-7 h-7 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center text-xs font-bold"
+                  th:text="${#strings.substring(#authentication.name,0,1).toUpperCase()}"></span>
+            <span sec:authentication="name" class="font-medium text-slate-700"></span>
+        </span>
+        <form method="post" th:action="@{/logout}">
+            <button type="submit" class="btn-secondary !px-3 !py-1.5">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                Logout
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- th:fragment="alerts" : flash success/error banners -->
+<div th:fragment="alerts" class="px-4 lg:px-6">
+    <div th:if="${successMessage}" class="mt-4 flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm rounded-lg px-4 py-3">
+        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <span th:text="${successMessage}"></span>
+    </div>
+    <div th:if="${errorMessage}" class="mt-4 flex items-center gap-2 bg-red-50 border border-red-200 text-red-800 text-sm rounded-lg px-4 py-3">
+        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <span th:text="${errorMessage}"></span>
+    </div>
+</div>
+</body>
+</html>

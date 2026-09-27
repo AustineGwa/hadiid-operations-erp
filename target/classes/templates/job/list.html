@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(title='Jobs')}"></head>
+<body class="bg-slate-50 min-h-screen">
+<div th:replace="~{fragments/layout :: sidebar}"></div>
+<div class="lg:pl-64">
+<div th:replace="~{fragments/layout :: topbar(title='Fabrication Jobs')}"></div>
+<div th:replace="~{fragments/layout :: alerts}"></div>
+<main class="max-w-7xl mx-auto p-6" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+    <div class="flex items-center justify-between mb-4">
+        <h1 class="text-2xl font-bold text-slate-900">Fabrication Jobs</h1>
+        <a th:if="${#authorization.expression('hasAuthority(''JOB_CREATE'')')}" href="/jobs/new"
+           class="btn-primary">+ New Job</a>
+    </div>
+
+    <form method="get" th:action="@{/jobs}" class="card p-5 mb-6 grid grid-cols-2 md:grid-cols-6 gap-3 text-sm">
+        <input type="text" name="searchText" th:value="${criteria.searchText}" placeholder="Vehicle ID / Job Card / Customer"
+               class="input col-span-2"/>
+        <select name="sectionId" class="input !py-1.5">
+            <option value="">All Sections</option>
+            <option th:each="s : ${sections}" th:value="${s.id}" th:text="${s.label}"
+                    th:selected="${criteria.sectionId} == ${s.id}"></option>
+        </select>
+        <select name="stageId" class="input !py-1.5">
+            <option value="">All Stages</option>
+            <option th:each="s : ${stages}" th:value="${s.id}" th:text="${s.label}"
+                    th:selected="${criteria.stageId} == ${s.id}"></option>
+        </select>
+        <label class="flex items-center gap-1"><input type="checkbox" name="dueSoon" value="true" th:checked="${criteria.dueSoon}"/> Due soon</label>
+        <label class="flex items-center gap-1"><input type="checkbox" name="overdue" value="true" th:checked="${criteria.overdue}"/> Overdue</label>
+        <button type="submit" class="col-span-2 md:col-span-1 btn-primary justify-center">Filter</button>
+    </form>
+
+    <div class="card overflow-x-auto">
+        <table class="min-w-full text-sm">
+            <thead class="bg-slate-50">
+            <tr>
+                <th class="th-cell">Vehicle ID</th>
+                <th class="th-cell">Job Card</th>
+                <th class="th-cell">Section</th>
+                <th class="th-cell">Model</th>
+                <th class="th-cell">Stage</th>
+                <th class="th-cell">Customer</th>
+                <th class="th-cell text-right">Production %</th>
+                <th class="th-cell text-right">Days Left</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="j : ${result.items}" class="border-t hover:bg-slate-50 cursor-pointer"
+                th:onclick="'window.location=\'/jobs/' + ${j.id} + '\''">
+                <td class="td-cell font-medium text-slate-900" th:text="${j.vehicleId}"></td>
+                <td class="td-cell" th:text="${j.jobCardNo}"></td>
+                <td class="td-cell" th:text="${j.sectionLabel}"></td>
+                <td class="td-cell" th:text="${j.vehicleModel}"></td>
+                <td class="td-cell">
+                    <span class="badge bg-brand-50 text-brand-700" th:text="${j.stageLabel}"></span>
+                    <span th:if="${j.overdue}" class="ml-1 px-2 py-0.5 rounded-full text-xs bg-red-100 text-red-700">Overdue</span>
+                    <span th:if="${j.dueSoon and !j.overdue}" class="ml-1 px-2 py-0.5 rounded-full text-xs bg-amber-100 text-amber-700">Due soon</span>
+                </td>
+                <td class="td-cell" th:text="${j.customerName}"></td>
+                <td class="td-cell text-right" th:text="${j.productionPercent != null ? #numbers.formatDecimal(j.productionPercent * 100,1,0) + '%' : '-'}"></td>
+                <td class="td-cell text-right" th:text="${j.workingDaysRemaining != null ? j.workingDaysRemaining : '-'}"></td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(result.items)}">
+                <td colspan="8" class="px-4 py-6 text-center text-slate-400">No jobs match this filter.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="flex justify-between items-center mt-4 text-sm text-slate-500">
+        <span th:text="${result.totalCount} + ' job(s)'"></span>
+        <div class="flex gap-2">
+            <a th:if="${result.hasPrevious}" th:href="@{/jobs(page=${result.page - 1}, searchText=${criteria.searchText}, sectionId=${criteria.sectionId}, stageId=${criteria.stageId})}"
+               class="underline">Previous</a>
+            <a th:if="${result.hasNext}" th:href="@{/jobs(page=${result.page + 1}, searchText=${criteria.searchText}, sectionId=${criteria.sectionId}, stageId=${criteria.stageId})}"
+               class="underline">Next</a>
+        </div>
+    </div>
+</main>
+</div>
+</body>
+</html>

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(title='Dashboard')}"></head>
+<body class="bg-slate-50 min-h-screen">
+<div th:replace="~{fragments/layout :: sidebar}"></div>
+<div class="lg:pl-64">
+<div th:replace="~{fragments/layout :: topbar(title='Dashboard')}"></div>
+<div th:replace="~{fragments/layout :: alerts}"></div>
+<main class="max-w-7xl mx-auto p-6 space-y-6">
+    <div>
+        <h2 class="text-xl font-bold text-slate-900">Overview</h2>
+        <p class="text-sm text-slate-500">Live work-in-progress across every section — computed on demand, nothing here is a stored snapshot (§J).</p>
+    </div>
+
+    <!-- KPI cards -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="card p-5">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold uppercase tracking-wide text-slate-500">Total Jobs</span>
+                <span class="w-9 h-9 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7h-3V5a2 2 0 00-2-2H9a2 2 0 00-2 2v2H4a1 1 0 00-1 1v10a2 2 0 002 2h14a2 2 0 002-2V8a1 1 0 00-1-1z"/></svg>
+                </span>
+            </div>
+            <div class="text-3xl font-bold text-slate-900 mt-3" th:text="${summary.totalJobs}"></div>
+        </div>
+        <div class="card p-5">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold uppercase tracking-wide text-slate-500">Released</span>
+                <span class="w-9 h-9 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </span>
+            </div>
+            <div class="text-3xl font-bold text-slate-900 mt-3" th:text="${summary.releasedJobs}"></div>
+        </div>
+        <div class="card p-5">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold uppercase tracking-wide text-slate-500">Due Soon</span>
+                <span class="w-9 h-9 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </span>
+            </div>
+            <div class="text-3xl font-bold text-slate-900 mt-3" th:text="${summary.dueSoonCount}"></div>
+        </div>
+        <div class="card p-5">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold uppercase tracking-wide text-slate-500">Overdue</span>
+                <span class="w-9 h-9 rounded-lg bg-red-50 text-red-600 flex items-center justify-center">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </span>
+            </div>
+            <div class="text-3xl font-bold text-slate-900 mt-3" th:text="${summary.overdueCount}"></div>
+        </div>
+    </div>
+
+    <div class="grid lg:grid-cols-5 gap-6">
+        <div class="card p-5 lg:col-span-3">
+            <h3 class="font-semibold text-slate-800 mb-4">Jobs by Stage &amp; Section</h3>
+            <canvas id="stageChart" height="240"></canvas>
+        </div>
+        <div class="card p-5 lg:col-span-2">
+            <h3 class="font-semibold text-slate-800 mb-4">Section Mix</h3>
+            <canvas id="sectionChart" height="240"></canvas>
+        </div>
+    </div>
+
+    <div class="card overflow-hidden">
+        <div class="px-5 py-3 border-b border-slate-100 font-semibold text-slate-800">Work-in-Progress Detail</div>
+        <table class="min-w-full text-sm">
+            <thead class="bg-slate-50">
+            <tr><th class="th-cell">Section</th><th class="th-cell">Stage</th><th class="th-cell text-right">Jobs</th></tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+            <tr th:each="row : ${stageCounts}">
+                <td class="td-cell font-medium" th:text="${row.sectionCode}"></td>
+                <td class="td-cell"><span class="badge bg-brand-50 text-brand-700" th:text="${row.stageCode}"></span></td>
+                <td class="td-cell text-right font-semibold" th:text="${row.count}"></td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(stageCounts)}"><td colspan="3" class="td-cell text-center text-slate-400 py-8">No jobs yet.</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="flex gap-3">
+        <a href="/jobs" class="btn-primary">View all jobs</a>
+        <a href="/schedule" class="btn-secondary">Today's schedule</a>
+    </div>
+</main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    const stageCounts = /*[[${stageCounts}]]*/ [];
+    /*]]>*/
+
+    const stageLabels = [...new Set(stageCounts.map(r => r.stageCode))];
+    const sectionLabels = [...new Set(stageCounts.map(r => r.sectionCode))];
+    const palette = ['#2563eb', '#60a5fa', '#93c5fd', '#1d4ed8', '#1e3a8a'];
+
+    new Chart(document.getElementById('stageChart'), {
+        type: 'bar',
+        data: {
+            labels: stageLabels,
+            datasets: sectionLabels.map((section, i) => ({
+                label: section,
+                data: stageLabels.map(stage => {
+                    const row = stageCounts.find(r => r.sectionCode === section && r.stageCode === stage);
+                    return row ? row.count : 0;
+                }),
+                backgroundColor: palette[i % palette.length],
+                borderRadius: 4
+            }))
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { position: 'bottom' } },
+            scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+        }
+    });
+
+    const sectionTotals = sectionLabels.map(section =>
+        stageCounts.filter(r => r.sectionCode === section).reduce((sum, r) => sum + r.count, 0));
+
+    new Chart(document.getElementById('sectionChart'), {
+        type: 'doughnut',
+        data: {
+            labels: sectionLabels,
+            datasets: [{ data: sectionTotals, backgroundColor: palette, borderWidth: 0 }]
+        },
+        options: { responsive: true, plugins: { legend: { position: 'bottom' } }, cutout: '65%' }
+    });
+</script>
+</body>
+</html>

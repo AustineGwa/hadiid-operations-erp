@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head(title='Production calendar')}"></head>
+<body class="bg-slate-50 min-h-screen">
+<div th:replace="~{fragments/layout :: sidebar}"></div>
+<div class="lg:pl-64">
+<div th:replace="~{fragments/layout :: topbar(title='Production Calendar')}"></div>
+<div th:replace="~{fragments/layout :: alerts}"></div>
+<main class="max-w-3xl mx-auto p-6 space-y-6">
+    <h1 class="text-2xl font-bold text-slate-900">Production Calendar (Day Status)</h1>
+    <p class="text-sm text-slate-500">
+        Informational only in this release (§H.4) — a date with no row here is a normal working day
+        (Mon–Fri, per the working-day calendar). Setting a status here does not yet change Working Days Remaining.
+    </p>
+
+    <form method="post" th:action="@{/settings/calendar}" sec:authorize="hasAuthority('SCHEDULE_EDIT')"
+          class="card p-5 flex flex-wrap gap-2 items-end text-sm">
+        <div>
+            <label class="block text-xs text-slate-500">Date</label>
+            <input type="date" name="date" required class="input !py-1.5"/>
+        </div>
+        <div>
+            <label class="block text-xs text-slate-500">Status</label>
+            <select name="status" class="input !py-1.5">
+                <option value="WORKING">Working</option>
+                <option value="NO_WORK">No Work</option>
+                <option value="ON_HOLD">On Hold</option>
+            </select>
+        </div>
+        <div>
+            <label class="block text-xs text-slate-500">Note</label>
+            <input type="text" name="note" class="input !py-1.5"/>
+        </div>
+        <button type="submit" class="btn-primary">Save</button>
+    </form>
+
+    <div class="card overflow-hidden">
+        <table class="min-w-full text-sm">
+            <thead class="bg-slate-100 text-left text-slate-600"><tr><th class="th-cell">Date</th><th class="th-cell">Status</th><th class="th-cell">Note</th></tr></thead>
+            <tbody>
+            <tr th:each="d : ${days}" class="border-t">
+                <td class="td-cell" th:text="${d.date}"></td>
+                <td class="td-cell" th:text="${d.status}"></td>
+                <td class="td-cell" th:text="${d.note}"></td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(days)}"><td colspan="3" class="px-3 py-4 text-center text-slate-400">No overrides in the next 30 days.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+</div>
+</body>
+</html>

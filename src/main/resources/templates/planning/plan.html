@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head(title='Production planning')}"></head>
+<body class="bg-slate-50 min-h-screen">
+<div th:replace="~{fragments/layout :: sidebar}"></div>
+<div class="lg:pl-64">
+<div th:replace="~{fragments/layout :: topbar(title='Production Planning')}"></div>
+<div th:replace="~{fragments/layout :: alerts}"></div>
+<main class="max-w-5xl mx-auto p-6 space-y-6">
+    <div class="flex items-center justify-between">
+        <h1 class="text-2xl font-bold text-slate-900" th:text="'Production Plan — ' + ${month}"></h1>
+        <a href="/planning/budget" class="text-sm underline text-slate-600">Weekly budgets →</a>
+    </div>
+
+    <div class="card overflow-hidden">
+        <table class="min-w-full text-sm">
+            <thead class="bg-slate-50">
+            <tr>
+                <th class="th-cell">Section</th>
+                <th class="th-cell text-right">Capacity Target</th>
+                <th class="th-cell text-right">Planned to Start</th>
+                <th class="th-cell text-right">Actual Released</th>
+                <th class="th-cell text-right">Variance</th>
+                <th class="th-cell" sec:authorize="hasAuthority('PLAN_EDIT')">Update Target</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="p : ${plans}" class="border-t">
+                <td class="td-cell font-medium" th:text="${p.sectionLabel}"></td>
+                <td class="td-cell text-right" th:text="${p.monthlyCapacityTarget}"></td>
+                <td class="td-cell text-right" th:text="${p.plannedToStart}"></td>
+                <td class="td-cell text-right" th:text="${p.actualReleased}"></td>
+                <td class="td-cell text-right" th:text="${p.variance}"></td>
+                <td class="td-cell" sec:authorize="hasAuthority('PLAN_EDIT')">
+                    <form method="post" th:action="@{/planning/target}" class="flex gap-1">
+                        <input type="hidden" name="sectionId" th:value="${p.sectionId}"/>
+                        <input type="hidden" name="month" th:value="${month}"/>
+                        <input type="number" name="target" th:value="${p.monthlyCapacityTarget}" class="input !py-1 !w-20"/>
+                        <button type="submit" class="btn-primary !px-2 !py-1 !text-xs">Save</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="card overflow-hidden">
+        <div class="px-4 py-2 bg-slate-50 font-semibold text-slate-800 border-b border-slate-100">Work-in-Progress Rollup (as of today)</div>
+        <table class="min-w-full text-sm">
+            <thead class="text-left border-b text-slate-600"><tr><th class="th-cell">Section</th><th class="th-cell text-right">WIP Jobs</th></tr></thead>
+            <tbody>
+            <tr th:each="w : ${wip}" class="border-t">
+                <td class="td-cell" th:text="${w.sectionLabel}"></td>
+                <td class="td-cell text-right" th:text="${w.wipCount}"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+</div>
+</body>
+</html>

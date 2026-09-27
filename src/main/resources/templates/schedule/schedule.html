@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(title='Schedule')}"></head>
+<body class="bg-slate-50 min-h-screen">
+<div th:replace="~{fragments/layout :: sidebar}"></div>
+<div class="lg:pl-64">
+<div th:replace="~{fragments/layout :: topbar(title='Schedule')}"></div>
+<div th:replace="~{fragments/layout :: alerts}"></div>
+<main class="max-w-5xl mx-auto p-6 space-y-6">
+    <h1 class="text-2xl font-bold text-slate-900">Schedule</h1>
+
+    <div class="card overflow-hidden">
+        <div class="px-4 py-2 bg-slate-50 font-semibold text-slate-800 border-b border-slate-100">Today's Actions</div>
+        <table class="min-w-full text-sm">
+            <thead class="text-left border-b text-slate-600">
+            <tr><th class="th-cell">Vehicle ID</th><th class="th-cell">Stage</th><th class="th-cell text-right">Days Left</th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="j : ${todaysActions}" class="border-t hover:bg-slate-50 cursor-pointer"
+                th:onclick="'window.location=\'/jobs/' + ${j.id} + '\''">
+                <td class="td-cell font-medium" th:text="${j.vehicleId}"></td>
+                <td class="td-cell" th:text="${j.stageLabel}"></td>
+                <td class="td-cell text-right" th:text="${j.workingDaysRemaining}"></td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(todaysActions)}"><td colspan="3" class="px-3 py-4 text-center text-slate-400">Nothing due today.</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="card overflow-hidden">
+        <div class="px-4 py-2 bg-slate-50 font-semibold text-slate-800 border-b border-slate-100">Next 14 Days — Day Status Overrides</div>
+        <table class="min-w-full text-sm">
+            <thead class="text-left border-b text-slate-600"><tr><th class="th-cell">Date</th><th class="th-cell">Status</th><th class="th-cell">Note</th></tr></thead>
+            <tbody>
+            <tr th:each="d : ${calendar}" class="border-t">
+                <td class="td-cell" th:text="${d.date}"></td>
+                <td class="td-cell" th:text="${d.status}"></td>
+                <td class="td-cell" th:text="${d.note}"></td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(calendar)}"><td colspan="3" class="px-3 py-4 text-center text-slate-400">No overrides set — every day is a normal working day.</td></tr>
+            </tbody>
+        </table>
+        <p class="text-xs text-slate-400 px-4 py-2">Informational only in this release (§H.4) — does not yet affect Working Days Remaining.</p>
+    </div>
+
+    <div class="card overflow-hidden">
+        <div class="px-4 py-2 bg-slate-50 font-semibold text-slate-800 border-b border-slate-100">Jobs Starting in the Next 14 Days</div>
+        <table class="min-w-full text-sm">
+            <thead class="text-left border-b text-slate-600"><tr><th class="th-cell">Vehicle ID</th><th class="th-cell">Section</th><th class="th-cell">Planned Start</th></tr></thead>
+            <tbody>
+            <tr th:each="j : ${jobsStarting}" class="border-t hover:bg-slate-50 cursor-pointer"
+                th:onclick="'window.location=\'/jobs/' + ${j.id} + '\''">
+                <td class="td-cell font-medium" th:text="${j.vehicleId}"></td>
+                <td class="td-cell" th:text="${j.sectionLabel}"></td>
+                <td class="td-cell" th:text="${j.plannedStartDate}"></td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(jobsStarting)}"><td colspan="3" class="px-3 py-4 text-center text-slate-400">None.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+</div>
+</body>
+</html>
