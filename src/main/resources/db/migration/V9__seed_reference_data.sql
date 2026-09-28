@@ -1,7 +1,8 @@
--- V9: Seed reference data — roles, permissions, role_permissions, vehicle_sections,
--- body_types (from the three dropdown lists in the workbook), fabrication_stages,
+-- V9: Seed reference/system configuration — roles, permissions, role_permissions,
+-- vehicle_sections, body_types (dropdown lists), fabrication_stages,
 -- stage_transitions (§H.1 Option B: forward-only advance + audited correction),
--- payment_methods, and three demo users (one per role) from the User Access roster.
+-- payment_methods, and the single initial admin account. The admin creates every
+-- other user from Settings → Users after first login; no other accounts are seeded.
 
 -- Roles (Rule 27 — exactly three top-level roles)
 INSERT INTO roles (id, code, label) VALUES
@@ -104,10 +105,8 @@ INSERT INTO payment_methods (id, code, label) VALUES
   (3, 'BANK_TRANSFER', 'Bank Transfer'),
   (4, 'CHEQUE', 'Cheque');
 
--- Demo users — one per role, seeded from the User Access roster (§B.13).
--- Password for all three: ChangeMe123!  (BCrypt hash below) — change immediately
--- after first login; this is seed/demo data, not a production credential.
+-- Initial admin account — the only user seeded at first boot.
+-- Password: ChangeMe123!  (BCrypt hash below) — change immediately after first
+-- login. Use Settings → Users (as this admin) to create every other account.
 INSERT INTO users (username, full_name, email, phone, password_hash, role_id, status, team) VALUES
-  ('admin',    'Admin User',      'admin@hadiid.local',    '0722-000000', '$2b$10$8ATX38ZxFYDQYM.lDvUMUeobt3z2qvMGlXck2Sgm82rA.DmK2qJKa', 3, 'ACTIVE', 'Admin'),
-  ('jwambui',  'Jane Wambui',     'jwambui@hadiid.local',  '0722-000111', '$2b$10$8ATX38ZxFYDQYM.lDvUMUeobt3z2qvMGlXck2Sgm82rA.DmK2qJKa', 2, 'ACTIVE', 'Operations'),
-  ('gnyambura','Grace Nyambura',  'gnyambura@hadiid.local','0722-000333', '$2b$10$8ATX38ZxFYDQYM.lDvUMUeobt3z2qvMGlXck2Sgm82rA.DmK2qJKa', 1, 'ACTIVE', 'Finance');
+  ('admin', 'Admin User', 'admin@hadiid.local', '0722-000000', '$2b$10$8ATX38ZxFYDQYM.lDvUMUeobt3z2qvMGlXck2Sgm82rA.DmK2qJKa', 3, 'ACTIVE', 'Admin');

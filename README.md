@@ -40,8 +40,10 @@ mvn spring-boot:run
 
 The app defaults to the `h2` Spring profile (in-memory H2, MySQL-compatibility
 mode) specifically so it can be built and smoke-tested without a real MySQL
-server first. Flyway will run all migrations and seed demo data automatically
-on boot. Open http://localhost:8080 and sign in (see credentials below).
+server first. Flyway will run all migrations on boot — this seeds only system
+configuration (roles, permissions, sections, body types, stages, payment
+methods) and a single `admin` account; there is no demo business data. Open
+http://localhost:8080 and sign in (see credentials below).
 
 ## Running against real MySQL
 
@@ -57,24 +59,25 @@ export DB_PASSWORD=<a real password>
 java -jar target/hadiid-erp.jar
 ```
 
-Flyway will create the schema and seed reference data (roles, permissions,
-sections, body types, stages, payment methods, three demo users) the first
-time it connects. **V10–V12 are optional demo data** (18 real customers/jobs,
-their full stage-history log, and labor/payments — transcribed directly from
-the source workbook) — delete those three migration files before your first
-production run if you want to start with an empty operational dataset and
-keep only the core schema + reference data from V1–V9.
+Flyway will create the schema and seed only system configuration (roles,
+permissions, sections, body types, stages, payment methods) plus a single
+initial `admin` account — the same as the `h2` profile. The system starts
+with no customers, jobs, users (other than `admin`), stage history, labor,
+or payments. Everything else is created by `admin` through the running app
+(Settings → Users to add the rest of the team, then Customers/Jobs as usual).
 
-## Demo credentials
+## Initial login
 
-| Username    | Role       | Password      |
-|-------------|------------|---------------|
-| `admin`     | Admin      | `ChangeMe123!` |
-| `jwambui`   | Supervisor | `ChangeMe123!` |
-| `gnyambura` | Normal User (Finance) | `ChangeMe123!` |
+| Username | Role  | Password       |
+|----------|-------|----------------|
+| `admin`  | Admin | `ChangeMe123!` |
 
-**Change these immediately in any real deployment** — they exist only so the
-app has something to log in with on first boot.
+This is the only account seeded on first boot. **Change this password
+immediately after first login**, then use Settings → Users (as `admin`) to
+create every other account the business needs — Supervisors and Normal
+Users alike. There is no other pre-created data of any kind; `admin` is
+responsible for entering customers, jobs, workers/contractors, and payments
+from a clean system.
 
 ## What's implemented
 
@@ -138,13 +141,13 @@ should confirm the real answer:
 ## One simplification I'm surfacing rather than quietly deciding
 
 The pure role-based permission model means `PAYMENT_CREATE` is a
-Supervisor/Admin permission. The source User Access roster implies finance
-staff — Grace Nyambura, `gnyambura`, seeded as `NORMAL_USER` — record
-payments day-to-day, which she currently cannot do under her role alone. A
-per-user permission override was judged out of scope for this pass given the
-effort/time available; the straightforward fix is either to move her to
-`SUPERVISOR`, or to add a narrow per-user permission-override table on top of
-the existing role-based model. Worth deciding before go-live.
+Supervisor/Admin permission. If finance staff are expected to record
+payments day-to-day but should otherwise sit at `NORMAL_USER` scope, that
+role alone won't let them — a per-user permission override was judged out
+of scope for this pass given the effort/time available. The straightforward
+fix, when a real finance user is created, is either to give that person the
+`SUPERVISOR` role, or to add a narrow per-user permission-override table on
+top of the existing role-based model. Worth deciding before go-live.
 
 ## Project layout
 
@@ -162,7 +165,7 @@ src/main/java/com/hadiid/erp/
   common/       audit trail, pagination, shared exceptions
   web/          home/login routing
 src/main/resources/
-  db/migration/       V1–V12 Flyway migrations (V10–V12 are optional demo data)
+  db/migration/       V1–V9 Flyway migrations (schema + system config + admin only)
   templates/          Thymeleaf + Tailwind (CDN) screens
   application.yml            default = h2 profile (dev/sandbox)
   application-mysql.yml      real deployment profile
